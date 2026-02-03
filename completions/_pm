@@ -1,0 +1,38 @@
+#compdef pm
+
+_pm_commands() {
+    local -a commands
+    commands=(
+        'f:Search for packages on device'
+        'find:Search for packages on device'
+        'd:Download APK from device'
+        'download:Download APK from device'
+        'c:Force-stop and clear app data'
+        'clear:Force-stop and clear app data'
+        'r:Uninstall package'
+        'remove:Uninstall package'
+    )
+    _describe -t commands 'pm command' commands
+}
+
+_pm_packages() {
+    local -a packages
+    if adb get-state &>/dev/null; then
+        # Fetch packages sorted by last install time (Newest first)
+        # This uses 'dumpsys' to find the order and 'sed' to clean it up
+        packages=(${(f)"$(adb shell 'dumpsys package' | grep -E "Package \[" | sed -E 's/.*\[(.*)\].*/\1/' | tac)"})
+        
+        if [[ ${#packages} -eq 0 ]]; then
+            # Fallback to standard list if dumpsys fails
+            packages=(${(f)"$(adb shell pm list packages | cut -d':' -f2)"})
+        fi
+        
+        _values 'installed packages (newest first)' $packages
+    else
+        _message "adb not connected / no device found"
+    fi
+}
+
+_arguments \
+    '1: :_pm_commands' \
+    '2: :_pm_packages'

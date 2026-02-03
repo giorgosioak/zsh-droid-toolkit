@@ -1,0 +1,14 @@
+# Ignore targets
+*.apk
+*.apks
+*.xapk
+
+# Ignore logs and temp files
+*.log
+*.txt
+tmp/
+
+# OS specific
+.DS_Store
+.idea/
+.vscode/
