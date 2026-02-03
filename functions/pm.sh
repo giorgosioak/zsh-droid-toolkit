@@ -10,11 +10,12 @@ pm() {
   local cmd=$1
   local target=$2
 
-  # Zsh Color definitions (using %F for foreground, %B for bold)
+  # Zsh Color definitions
   local RED='%F{160}'
   local GREEN='%F{082}'
   local YELLOW='%F{220}'
   local CYAN='%F{045}'
+  local BOLD='%B'
   local NC='%f%b' 
 
   # Usage Menu
@@ -24,6 +25,7 @@ pm() {
     print -P ""
     print -P "  ${CYAN}f, find     ${NC} Search packages (case-insensitive)"
     print -P "  ${CYAN}d, download ${NC} Pull APK to current directory"
+    print -P "  ${CYAN}l, log      ${NC} Stream color-coded logs for app"
     print -P "  ${CYAN}c, clear    ${NC} Force-stop & wipe app data/cache"
     print -P "  ${CYAN}r, remove   ${NC} Uninstall package from device"
     return 1
@@ -52,11 +54,36 @@ pm() {
       adb shell pm clear "$target"
       [[ $? -eq 0 ]] && print -P "${GREEN}Success: Device storage cleared.${NC}"
       ;;
+    l|log)
+      local pid=$(adb shell pidof -s "$target" | tr -d '\r\n')
+
+      if [[ -z "$pid" ]]; then
+        print -P "${YELLOW}App '$target' is not running.${NC}"
+        print -Pn "Launch it now? [y/N]: "
+        read -k 1 launch
+        echo
+        if [[ "$launch" == [yY] ]]; then
+            adb shell monkey -p "$target" -c android.intent.category.LAUNCHER 1 >/dev/null 2>&1
+            sleep 2
+            pid=$(adb shell pidof -s "$target" | tr -d '\r\n')
+        else
+            return 1
+        fi
+      fi
+
+      if [[ -n "$pid" ]]; then
+        print -P "${GREEN}✔ Logging Started${NC} (PID: $pid)"
+        print -P "${YELLOW}Press Ctrl+C to stop...${NC}"
+        # -v color: Native colors, -v brief: clean headers
+        adb logcat -v color -v brief --pid="$pid" "*:V"
+      else
+        print -P "${RED}Error:${NC} Could not capture PID for $target."
+      fi
+      ;;
     r|remove)
-      # Zsh 'read' for single keypress confirmation
       print -Pn "${YELLOW}Uninstall '$target'? [y/N] ${NC}"
       read -k 1 confirm
-      echo # New line after keypress
+      echo 
       if [[ "$confirm" == [yY] ]]; then
         print -P "${CYAN}Removing...${NC}"
         adb uninstall "$target"

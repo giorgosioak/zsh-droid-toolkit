@@ -12,6 +12,7 @@ The `pm` function provides a streamlined interface for `adb` package operations 
 | --- | --- | --- |
 | `find` | `f` | Search installed packages |
 | `download` | `d` | Pull APK from device |
+| `log` | `l` | Stream color-coded logs for app |
 | `clear` | `c` | Force-stop and wipe app data |
 | `remove` | `r` | Uninstall package |
 

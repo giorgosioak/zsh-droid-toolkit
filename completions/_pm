@@ -7,6 +7,8 @@ _pm_commands() {
         'find:Search for packages on device'
         'd:Download APK from device'
         'download:Download APK from device'
+        'l:Stream color-coded logs'
+        'log:Stream color-coded logs'
         'c:Force-stop and clear app data'
         'clear:Force-stop and clear app data'
         'r:Uninstall package'
